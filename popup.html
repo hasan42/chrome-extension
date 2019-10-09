@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      .wrap {
+        width: 170px;
+        font-size: 14px;
+      }
+      p {
+        margin: 0;
+      }
+      button, input {
+        display: block;
+        margin: 5px 0;
+        padding: 5px 10px;
+        background: #f60;
+        color: #fff;
+        text-decoration: none;
+        text-align: center;
+        border: 0;
+        outline: 0;
+      }
+      #downloadAnchorElem {
+        color: #0e99fb;
+        text-decoration: underline;
+        text-align: center;
+        display: block;
+      }
+      hr {
+        margin: 5px 0;
+        border-color: #ccc;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <p>Kinopoisk site scrap films</p>
+      <button id="startParse">Start parse</button>
+      <a id="downloadAnchorElem" style="display:none">Save Json</a>
+      <hr>
+      <button id="sequelKpFile">Sequel It!</button>
+    </div>
+    <script src="jquery-3.4.1.min.js"></script>
+    <script src="popup.js"></script>
+  </body>
+</html>
