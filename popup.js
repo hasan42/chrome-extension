@@ -45,6 +45,14 @@ $("#sequelKpFile").on("click", function(event){
 	});
 });
 
+$("#seasonKpFile").on("click", function(event){
+	chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
+	    chrome.tabs.executeScript(
+	        tabs[0].id,
+	        {code: 'let event = new Event("kpStartScriptFindSeason"); document.dispatchEvent(event);'});
+	});
+});
+
 function receivedText(e) {
 	let lines = e.target.result;
 	let newArr = JSON.parse(lines);

@@ -1,6 +1,8 @@
 'use strict';
 
-let startParse = 'false', parseDone = 'false', startParseSequel = 'false', doneParseSequel = 'false';
+let startParse = 'false', parseDone = 'false',
+	startParseSequel = 'false', doneParseSequel = 'false',
+	startParseSeason = 'false', doneParseSeason = 'false';
 let kinopoiskId = '1098694', allPage = 0, items = [], currentPage = 1;
 
 function initParserKP(){
@@ -21,9 +23,15 @@ function initParserKP(){
 }
 
 function initSeq(){
-	startParse = localStorage.getItem('kpParseSequelStart');
-	if(startParse != 'false'){
+	startParseSequel = localStorage.getItem('kpParseSequelStart');
+	if(startParseSequel != 'false'){
 		localStorage.setItem('kpParseSequelStart', 'true');
+	}
+}
+function initSeason(){
+	startParse = localStorage.getItem('kpParseSeasonStart');
+	if(startParse != 'false'){
+		localStorage.setItem('kpParseSeasonStart', 'true');
 	}
 }
 
@@ -138,6 +146,57 @@ function startSequel(){
 	// localStorage.setItem('doneParseSequel', 'true');
 }
 
+function startSeason(){
+	if($("body").hasClass("b-page_type_kinopoisk")){
+		return;
+	}
+	let filmList = JSON.parse(localStorage.getItem('filmItems'));
+
+	filmList.map((item) => {
+		//check take sequel or episodes
+		if( item.serial === true ){
+			//parse or need relocation
+			let currentLocation = window.location.href;
+			let itemLink = item.link + "episodes/";
+			if(currentLocation.includes(itemLink)){
+				//have sequel
+				console.log('true')
+				let epInfo = {
+					episodes: []
+				};
+
+				//how many seasons
+				let lastSeason = Number(document.querySelector(".season_item:last-of-type a").textContent);
+
+				for (let i = 1; i <= lastSeason; i++) {
+					if(document.querySelector("a[name='s"+i+"']")){
+						let tableSeason = document.querySelector("a[name='s"+i+"']").nextElementSibling;
+						let yearAndEp = tableSeason.querySelector("tr:first-child td:first-child").textContent;
+						let strYearAndEp = yearAndEp.split(' ');
+						let countEp = strYearAndEp[strYearAndEp.length - 1];
+						let str = "s"+i+"e"+countEp;
+						epInfo.episodes.push(str);
+					}else{
+						let str = "s"+i+"e0";
+						epInfo.episodes.push(str);
+					}
+				}
+				console.log(epInfo)
+
+				item.serial = epInfo;
+
+				localStorage.setItem('filmItems', JSON.stringify( filmList ));
+
+			}else{
+				let randomnumber = Math.floor(Math.random() * (6 - 2 + 1)) + 2;
+				setTimeout(()=>{
+					window.location.href = "http://www.kinopoisk.ru" + item.link + "episodes/";
+				}, randomnumber*1000);
+			}
+		}
+	});
+}
+
 function downloadObjectAsJson( content, fileName ){
     var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(localStorage.getItem(content)));
     var downloadAnchorNode = document.createElement('a');
@@ -152,6 +211,8 @@ startParse = localStorage.getItem('kpParseStart');
 parseDone = localStorage.getItem('kpParseDone');
 startParseSequel = localStorage.getItem('kpParseSequelStart');
 doneParseSequel = localStorage.getItem('kpParseSequelDone');
+startParseSeason = localStorage.getItem('kpParseSeasonStart');
+doneParseSeason = localStorage.getItem('kpParseSeasonDone');
 
 document.addEventListener("kpStartScriptParser", function(event) {
 	console.log('kpStartScriptParser')
@@ -181,6 +242,22 @@ document.addEventListener("kpStartScriptFindSequel", function(event) {
 	startSequel();
 });
 
+document.addEventListener("kpStartScriptFindSeason", function(event) {
+	
+	console.log('kpStartScriptFindSeason')
+	localStorage.setItem('kpParseStart', 'false')
+	localStorage.setItem('kpParseSequelStart', 'false');
+	localStorage.setItem('kpParseSeasonStart', 'true');
+
+	if(doneParseSeason === 'true'){
+		console.log('parse done');
+		downloadObjectAsJson("filmItemsFindSeason", "films-Season-list" );
+	  	return;
+	}
+
+	startSeason();
+});
+
 if(startParse === 'true'){
 	console.log('start')
 	let event = new Event("kpStartScriptParser");
@@ -190,5 +267,11 @@ if(startParse === 'true'){
 if(startParseSequel === 'true'){
 	console.log('start sequel')
 	let event = new Event("kpStartScriptFindSequel");
+  	document.dispatchEvent(event);
+}
+
+if(startParseSeason === 'true'){
+	console.log('start season')
+	let event = new Event("kpStartScriptFindSeason");
   	document.dispatchEvent(event);
 }
